@@ -97,16 +97,29 @@ What registering a backend does — and does not do:
   helper program) — registration only makes it selectable and recorded.
 - Deleting a registration removes it from future choices only; jobs
   already created keep the recorded name as text.
+- The built-in generic `external` item itself can also be removed:
+  a persisted preference (`external_hidden`, default false) hides it from
+  the job-creation choices and makes the server reject unnamed external
+  jobs, while jobs using a registered backend name keep working. The
+  preference is reversible at any time and does not affect jobs already
+  created.
 - `subject_profile` (optional, initially empty): if the user wants a
   recurring subject in generated media, *the user* registers their own
   profile — a reference-image path and/or a short appearance/context text —
   and jobs may attach it. It is user data, empty by default, and never
   pre-filled by the artifact.
 - `status`: `queued` / `generated` / `encrypted` / `done` / `failed`
+- `output_format`: `lenc` (default) or `gpg` — the encryption container
+  for this job (see “Output formats” below)
+- execution request: a queued job can carry an execution request
+  (requested timestamp) placed from the UI's “request execution” button.
+  Requesting hands the job to the user's AI companion as a background
+  task; a job that already has a request cannot be requested twice
 - `note`: free text (optional)
 
 ### receipts
-- `job_id` (optional link), `alg`, `key_id`
+- `job_id` (optional link), `alg`, `key_id`, `output_format`
+  (`lenc` / `gpg`)
 - `in_bytes`, `out_bytes`, `ciphertext_sha256`, `signed`, `elapsed_seconds`
 - File contents are never stored in a receipt.
 
@@ -118,8 +131,15 @@ The artifact publishes actions so the user's Muse can drive it from chat:
 - `registerBackend`, `listBackends`, `deleteBackend`
   (the user-registered generation AIs described under `jobs` above;
   `createJob` takes `backend_name` together with `backend = external`
-  to use one of them)
+  to use one of them; `listBackends` also returns `external_hidden`)
+- `setExternalBackendHidden` (remove / restore the built-in `external`
+  item, as described under `jobs` above)
 - `createJob`, `listJobs`, `updateJobStatus`, `deleteJob`
+  (`createJob` also takes `output_format`)
+- `requestJobExecution` (the UI button's action: hands one queued job
+  to the user's AI companion as a background task), `reportJobExecution`
+  (the executing agent reports completion — job done + receipt in one
+  step — or failure with a reason)
 - `getSubjectProfile`, `saveSubjectProfile`, `deleteSubjectProfile`
   (the single optional subject profile described under `jobs` above)
 - `recordReceipt`, `listReceipts`, `deleteReceipt`
@@ -130,21 +150,28 @@ The artifact publishes actions so the user's Muse can drive it from chat:
 
 1. **Keys** — register a key by pasting PEM / base64 text, choosing alg,
    key_id and role; activate / rotate keys; generate a key pair in the
-   browser and register the public half. Show a notice that in principle
+   browser and register the public half. For `gpg` output, an OpenPGP
+   public key block may be registered as the destination key under the
+   matching algorithm label. Show a notice that in principle
    only public keys should be registered. Validate that the pasted key
    material matches the selected algorithm, and report registration
    success/failure explicitly with the fingerprint.
 2. **Generation jobs** — create jobs (media type, instruction, alg,
-   backend, optional subject profile), track status. Includes a
+   backend, output format, optional subject profile), track status.
+   Each queued job offers a “request execution” button that hands the
+   job to the user's AI companion. Includes a
    “register your own generation AI as a backend” section (name, media
    types, how-to-reach-it note) and visible explanations of how to add a
    backend, what happens when one is added (it becomes a job choice and
    its name is recorded on jobs), and what registration does not do
    (it neither connects nor calls the service by itself, and no
-   credentials are stored).
+   credentials are stored). The built-in `external` item is listed in
+   the same section and can be removed there (with confirmation) and
+   restored; see the `external_hidden` preference under `jobs`.
 3. **Crypto tool** — encrypt / decrypt files entirely in the browser for
    all six algorithms, in the same `.lenc` v1 format as the Python engine,
-   so the two are interoperable. If an algorithm cannot run in the
+   so the two are interoperable. It covers the `lenc` format only; `gpg`
+   output is produced by the executing agent. If an algorithm cannot run in the
    browser, say so honestly and defer to the Python engine.
 4. **Receipts** — the metadata-only ledger.
 
@@ -163,6 +190,18 @@ notes summarized from the top-level README.
 - Layout: one-line JSON header (magic, alg, key_id, KEM ciphertext, nonces;
   no plaintext information) + length-prefixed GCM chunks + optional
   fixed-length trailing signature.
+
+## Output formats
+
+- `lenc` — the format above; produced and consumed by both the in-browser
+  tool and the Python engine.
+- `gpg` — a standard OpenPGP message encrypted to the recipient key
+  registered for the job (an OpenPGP public key block, e.g. RSA or
+  Ed25519/X25519, Ed448/X448 keys), decryptable with ordinary GPG tools
+  and the user's PGP private key. Production happens on the executing
+  side (the companion / the user's GPG); the Python engine is
+  `lenc`-only. The chosen format is recorded on both the job and its
+  receipt.
 
 ## Non-goals / cautions
 

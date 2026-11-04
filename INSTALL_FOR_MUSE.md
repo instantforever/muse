@@ -20,8 +20,8 @@ nothing here connects back to the author's environment, accounts, or data.
 
 3. **Your Muse builds two things:**
    - a web artifact (the control console) following
-     `artifact/ARTIFACT_SPEC.md` — four tabs: Keys / Generation jobs /
-     Crypto tool / Receipts, starting with an empty database;
+     `artifact/ARTIFACT_SPEC.md` — tabs: Keys / Generation jobs /
+     Crypto tool / Receipts / Distribution, starting with an empty database;
    - the Python engine in your workspace (`lenc-pipeline/lenc.py`),
      set up with `./setup.sh` and verified with
      `.venv/bin/python run_tests.py` (expected: 24/24 PASS + rotation PASS).
@@ -29,7 +29,7 @@ nothing here connects back to the author's environment, accounts, or data.
    pair in the browser or register a public key you made yourself.
    In principle, give your Muse **public keys only**; keep private
    (decryption) keys on your own side.
-5. **Use it from chat.** Ask your Muse things like
+5. **Use it from chat — or from the artifact.** Ask your Muse things like
    “generate an image of … and encrypt it with RSA-2048”.
    Your Muse creates a job in the artifact, generates the file, encrypts
    it with the Python engine without opening it, records a
@@ -39,6 +39,12 @@ nothing here connects back to the author's environment, accounts, or data.
    ```bash
    .venv/bin/python lenc.py decrypt --infile <file.lenc> --out <restored-file> --keys keys
    ```
+
+   Alternatively, register a job yourself in the Generation jobs tab and
+   press its “request execution” button: your Muse companion picks it up
+   as a background task and runs the same flow. Each job also chooses its
+   output format — `.lenc`, or `.gpg` (a standard OpenPGP message to a
+   registered OpenPGP public key, for people who prefer GPG tooling).
 
 ## Notes
 
