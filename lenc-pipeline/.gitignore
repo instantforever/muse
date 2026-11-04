@@ -1,0 +1,7 @@
+.venv/
+work/
+keys/
+staging/
+output/
+__pycache__/
+*.lenc
