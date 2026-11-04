@@ -60,11 +60,43 @@ Security invariants:
   not present any single format (e.g. WAV) as “the” audio format.
 - `instruction`: the generation instruction text
 - `alg`: encryption algorithm to apply
-- `backend`: generation backend identifier, free-form / extensible
-  (examples: `muse-image`, `muse-video`, or an external generator).
+- `backend`: one of the built-in backends `muse-image` / `muse-video`
+  (the generators built into the user's own Muse environment), or
+  `external`. A job that uses a user-registered generation AI (see
+  `backends` below) is recorded as `backend = external` together with
+  `backend_name` = the registered name, so the name the user chose is
+  preserved on the job and shown in the job list.
   Backends are generic: a backend means “something that writes a file into
   the staging folder”. **No backend may hardcode a specific person,
   character, reference image, or appearance text.**
+
+### backends (user-registered generation AIs)
+Starts empty. This registry is how a user makes *their own* generation
+AIs (image / music / video / text services or helper programs) selectable
+as job backends — without it, only the built-ins and a generic
+`external` are available.
+
+- `name`: display name of the generation AI, chosen by the user
+  (e.g. the service or helper they actually use)
+- `media_types`: which media kinds it can produce
+  (`image` / `video` / `audio` / `text`; empty = any)
+- `note`: how the user's Muse reaches it in the user's own environment
+  (a connected tool / connector, an API, a local helper program, plus the
+  staging-folder contract). Free text for the executing agent.
+  **Never store credentials or API keys here.**
+
+What registering a backend does — and does not do:
+
+- It adds the name to the job-creation form's backend choices, filtered
+  to backends whose media types match the job's media type.
+- Jobs created with it record the name, and the executing agent uses the
+  name and note to generate with that AI.
+- It does **not** connect or call the service by itself: the artifact
+  never executes a generator. The generation AI must already be usable
+  in the user's Muse environment (connected tool, API access, or a
+  helper program) — registration only makes it selectable and recorded.
+- Deleting a registration removes it from future choices only; jobs
+  already created keep the recorded name as text.
 - `subject_profile` (optional, initially empty): if the user wants a
   recurring subject in generated media, *the user* registers their own
   profile — a reference-image path and/or a short appearance/context text —
@@ -83,6 +115,10 @@ Security invariants:
 The artifact publishes actions so the user's Muse can drive it from chat:
 
 - `registerKey`, `listKeys` (metadata only), `setActiveKey`, `deleteKey`
+- `registerBackend`, `listBackends`, `deleteBackend`
+  (the user-registered generation AIs described under `jobs` above;
+  `createJob` takes `backend_name` together with `backend = external`
+  to use one of them)
 - `createJob`, `listJobs`, `updateJobStatus`, `deleteJob`
 - `getSubjectProfile`, `saveSubjectProfile`, `deleteSubjectProfile`
   (the single optional subject profile described under `jobs` above)
@@ -99,7 +135,13 @@ The artifact publishes actions so the user's Muse can drive it from chat:
    material matches the selected algorithm, and report registration
    success/failure explicitly with the fingerprint.
 2. **Generation jobs** — create jobs (media type, instruction, alg,
-   backend, optional subject profile), track status.
+   backend, optional subject profile), track status. Includes a
+   “register your own generation AI as a backend” section (name, media
+   types, how-to-reach-it note) and visible explanations of how to add a
+   backend, what happens when one is added (it becomes a job choice and
+   its name is recorded on jobs), and what registration does not do
+   (it neither connects nor calls the service by itself, and no
+   credentials are stored).
 3. **Crypto tool** — encrypt / decrypt files entirely in the browser for
    all six algorithms, in the same `.lenc` v1 format as the Python engine,
    so the two are interoperable. If an algorithm cannot run in the
