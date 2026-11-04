@@ -2,7 +2,7 @@
 
 This repository is a distribution package for people who use
 [muse.ai](https://muse.ai). It contains everything your own Muse needs to
-recreate the **Encrypted Generation Pipeline** in *your* environment:
+recreate the **Sealed Generation Pipeline** in *your* environment:
 nothing here connects back to the author's environment, accounts, or data.
 
 ## Steps
@@ -12,7 +12,7 @@ nothing here connects back to the author's environment, accounts, or data.
 2. **Hand it to your Muse.** In your Muse chat, attach / upload the ZIP
    (or the extracted folder) and say, for example:
 
-   > This is the Encrypted Generation Pipeline distribution package.
+   > This is the Sealed Generation Pipeline distribution package.
    > Please read `INSTALL_FOR_MUSE.md` and `artifact/ARTIFACT_SPEC.md`,
    > then build the artifact exactly as the spec describes — empty, with
    > no sample data — and install the Python engine from `lenc-pipeline/`

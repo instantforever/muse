@@ -1,4 +1,4 @@
-# ARTIFACT_SPEC — Encrypted Generation Pipeline (generic edition)
+# ARTIFACT_SPEC — Sealed Generation Pipeline (generic edition)
 
 A specification for recreating the companion web artifact in your own
 muse.ai (Muse) environment. Give this file (and the whole repository) to your
