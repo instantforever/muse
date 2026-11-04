@@ -136,10 +136,18 @@ The artifact publishes actions so the user's Muse can drive it from chat:
   item, as described under `jobs` above)
 - `createJob`, `listJobs`, `updateJobStatus`, `deleteJob`
   (`createJob` also takes `output_format`)
-- `requestJobExecution` (the UI button's action: hands one queued job
-  to the user's AI companion as a background task), `reportJobExecution`
-  (the executing agent reports completion — job done + receipt in one
-  step — or failure with a reason)
+- `requestJobExecution` (the UI button's action: records an execution
+  request for one queued job — it starts nothing by itself; generation
+  begins only when the user asks their companion in chat)
+- `listPendingExecutionRequests` (the companion fetches pending
+  requests, each with the job's instruction, backend and its connection
+  note, attachment set, destination key and step-by-step execution
+  guidance), `claimExecutionRequest` (the companion claims one request
+  before executing it in its own chat context), `reportJobEvent` (the
+  executing companion records started / succeeded / failed report events
+  on the job — the artifact-side report trail), `reportJobExecution`
+  (the final report: job done + receipt in one step, or failure with a
+  reason; it also completes the claimed request)
 - `getSubjectProfile`, `saveSubjectProfile`, `deleteSubjectProfile`
   (the single optional subject profile described under `jobs` above)
 - `recordReceipt`, `listReceipts`, `deleteReceipt`
