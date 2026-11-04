@@ -114,13 +114,24 @@ What registering a backend does — and does not do:
 - execution request: a queued job can carry an execution request
   (requested timestamp) placed from the UI's “request execution” button.
   Requesting hands the job to the user's AI companion as a background
-  task; a job that already has a request cannot be requested twice
+  task; a job that already has a request cannot be requested twice.
+  The handoff instructs the executing companion to delete the plaintext
+  file — including intermediate files such as thumbnails and generation
+  metadata — immediately after the ciphertext is verified, and to
+  confirm that deletion in its completion report (see
+  `reportJobExecution` below). If encryption fails, the plaintext is
+  kept and its location must be stated in the failure reason
 - `note`: free text (optional)
 
 ### receipts
 - `job_id` (optional link), `alg`, `key_id`, `output_format`
   (`lenc` / `gpg`)
 - `in_bytes`, `out_bytes`, `ciphertext_sha256`, `signed`, `elapsed_seconds`
+- `plaintext_deleted` (boolean): whether the executing agent confirmed
+  that the plaintext was deleted once encryption completed. Receipts
+  recorded before this field existed, or without that confirmation,
+  read back `false` and are shown as “unconfirmed” — never silently
+  upgraded
 - File contents are never stored in a receipt.
 
 ## Actions (chat-facing API)
@@ -137,17 +148,17 @@ The artifact publishes actions so the user's Muse can drive it from chat:
 - `createJob`, `listJobs`, `updateJobStatus`, `deleteJob`
   (`createJob` also takes `output_format`)
 - `requestJobExecution` (the UI button's action: records an execution
-  request for one queued job — it starts nothing by itself; generation
-  begins only when the user asks their companion in chat)
-- `listPendingExecutionRequests` (the companion fetches pending
-  requests, each with the job's instruction, backend and its connection
-  note, attachment set, destination key and step-by-step execution
-  guidance), `claimExecutionRequest` (the companion claims one request
-  before executing it in its own chat context), `reportJobEvent` (the
-  executing companion records started / succeeded / failed report events
-  on the job — the artifact-side report trail), `reportJobExecution`
-  (the final report: job done + receipt in one step, or failure with a
-  reason; it also completes the claimed request)
+  request for one queued job and hands it to the user's AI companion as
+  a background task — generate, encrypt blind, delete the plaintext the
+  moment encryption completes, and report back via
+  `reportJobExecution`. A job already requested cannot be requested
+  twice)
+- `reportJobExecution` (the executing agent's completion report: on
+  success it marks the job done and records its metadata-only receipt
+  in one step; on failure it marks the job failed with the reason. A
+  success report must carry `plaintext_deleted = true` — the server
+  rejects a success report without that confirmation, recording no
+  receipt and leaving the job uncompleted)
 - `getSubjectProfile`, `saveSubjectProfile`, `deleteSubjectProfile`
   (the single optional subject profile described under `jobs` above)
 - `recordReceipt`, `listReceipts`, `deleteReceipt`
@@ -167,7 +178,10 @@ The artifact publishes actions so the user's Muse can drive it from chat:
 2. **Generation jobs** — create jobs (media type, instruction, alg,
    backend, output format, optional subject profile), track status.
    Each queued job offers a “request execution” button that hands the
-   job to the user's AI companion. Includes a
+   job to the user's AI companion as a background task. The tab also
+   explains the execution flow, including that the plaintext is deleted
+   the moment encryption completes and that a completion report without
+   the deletion confirmation is rejected. Includes a
    “register your own generation AI as a backend” section (name, media
    types, how-to-reach-it note) and visible explanations of how to add a
    backend, what happens when one is added (it becomes a job choice and
@@ -181,7 +195,11 @@ The artifact publishes actions so the user's Muse can drive it from chat:
    so the two are interoperable. It covers the `lenc` format only; `gpg`
    output is produced by the executing agent. If an algorithm cannot run in the
    browser, say so honestly and defer to the Python engine.
-4. **Receipts** — the metadata-only ledger.
+4. **Receipts** — the metadata-only ledger. Each receipt shows whether
+   the plaintext deletion was confirmed (`plaintext_deleted`); receipts
+   without the confirmation are badged as unconfirmed. (Receipts
+   recorded directly by the in-browser crypto tool carry no job and
+   show no badge — no server-side plaintext exists there to delete.)
 
 An optional fifth **Distribution** tab may present this package itself:
 the repository link, the package layout, install steps, and the license

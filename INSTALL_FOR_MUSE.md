@@ -46,6 +46,13 @@ nothing here connects back to the author's environment, accounts, or data.
    output format — `.lenc`, or `.gpg` (a standard OpenPGP message to a
    registered OpenPGP public key, for people who prefer GPG tooling).
 
+   In every execution flow, the plaintext file is deleted the moment
+   encryption completes (intermediate files such as thumbnails
+   included), and the artifact enforces this: a completion report that
+   does not confirm the deletion is rejected, so a job cannot be marked
+   done with its plaintext left behind. If encryption fails, the
+   plaintext is kept and its location is stated in the failure reason.
+
 ## Notes
 
 - Each Muse environment is separate: your artifact, your keys, and your
