@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 """Stand-in for an image/video/text/audio GENERATOR.
 Creates files whose exact bytes the assistant never sees: content derives
-from os.urandom inside this process. Only names+sizes are reported."""
+from os.urandom inside this process. Only names+sizes are reported.
+
+The sample formats (txt / png / wav / mp4) are representatives only.
+The pipeline itself is format-agnostic: audio in particular may be WAV,
+OGG, MP3, M4A, FLAC, AAC, Opus, or any other format."""
 import os, random, struct, sys, wave, zlib
 
 out = sys.argv[1]

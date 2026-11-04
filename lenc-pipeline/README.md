@@ -64,9 +64,16 @@ GCM chunks, followed by a fixed-length signature when signing applies.
 .venv/bin/python run_tests.py
 ```
 
-Runs round-trip checks for 6 algorithms × 4 file types (txt / png / wav / mp4),
-tamper rejection (one flipped ciphertext byte), and key rotation.
+Runs round-trip checks for 6 algorithms × 4 sample file types
+(txt / png / wav / mp4), tamper rejection (one flipped ciphertext byte),
+and key rotation.
 It prints only PASS/FAIL and sizes — never plaintext or plaintext hashes.
+
+The four samples are representatives only. The engine is format-agnostic:
+it encrypts any file as a binary stream. In particular, “audio” is not
+limited to WAV — OGG, MP3, M4A, FLAC, AAC, Opus and any other audio
+format work exactly the same way, as do other image, video and text
+formats.
 
 ## Production warnings
 

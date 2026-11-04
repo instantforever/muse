@@ -51,6 +51,13 @@ Security invariants:
 
 ### jobs
 - `media_type`: `image` / `video` / `audio` / `text`
+  Media types name the *kind* of content, never a file format. In
+  particular `audio` is format-agnostic: it covers WAV, OGG, MP3, M4A,
+  FLAC, AAC, Opus and any other audio file format. The same applies to
+  the other types (any image / video / text format). The encryption
+  engine treats every file as a binary stream, so extensions and
+  container formats are irrelevant to the pipeline; UIs and docs must
+  not present any single format (e.g. WAV) as “the” audio format.
 - `instruction`: the generation instruction text
 - `alg`: encryption algorithm to apply
 - `backend`: generation backend identifier, free-form / extensible
